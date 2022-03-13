@@ -3,20 +3,29 @@ using Microsoft.AspNetCore.Mvc;
 using Services.PlatformService.Data;
 using Services.PlatformService.Dtos;
 using Services.PlatformService.Models;
+using Services.PlatformService.SyncDataServices.Http;
 
 namespace Services.PlatformService.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 public class PlatformsController : ControllerBase
 {
+    #region Fields :
     private readonly IPlatformRepo _platformRepo;
     private readonly IMapper _mapper;
-    public PlatformsController(IPlatformRepo platformRepo, IMapper mapper)
+    private readonly ICommandDataClient _commandDataClient;
+    #endregion
+
+    #region CTORS :
+    public PlatformsController(IPlatformRepo platformRepo, IMapper mapper, ICommandDataClient commandDataClient)
     {
         _platformRepo = platformRepo;
         _mapper = mapper;
+        _commandDataClient = commandDataClient;
     }
+    #endregion
 
+    #region Endpoints :
     [HttpGet]
     public ActionResult<IEnumerable<PlatformReadDto>> GetPlatforms()
     {
@@ -24,7 +33,7 @@ public class PlatformsController : ControllerBase
         var platformItems = _platformRepo.GetAllPlatforms();
         return Ok(_mapper.Map<IEnumerable<PlatformReadDto>>(platformItems));
     }
-    [HttpGet("{id:int}",Name = "GetPlatformById")]
+    [HttpGet("{id:int}", Name = "GetPlatformById")]
     public ActionResult<PlatformReadDto> GetPlatformById(int id)
     {
         Console.WriteLine($"--> Getting Platform By Id '{id}'...");
@@ -33,12 +42,22 @@ public class PlatformsController : ControllerBase
         return Ok(_mapper.Map<PlatformReadDto>(platformItem));
     }
     [HttpPost]
-    public ActionResult<PlatformReadDto> CreatePlatform(PlatformCreateDto createDto)
+    public async Task<ActionResult<PlatformReadDto>> CreatePlatform(PlatformCreateDto createDto)
     {
         var platform = _mapper.Map<Platform>(createDto);
         _platformRepo.CreatePlatform(platform);
         _platformRepo.SaveChanges();
-        var platformReadDto=_mapper.Map<PlatformReadDto>(platform);
-        return CreatedAtRoute(nameof(GetPlatformById), new { platform.Id },platformReadDto);
+        var platformReadDto = _mapper.Map<PlatformReadDto>(platform);
+
+        try
+        {
+            await _commandDataClient.SendPlatformToCommand(platformReadDto);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"--> Could not send synchrounously: {ex.Message}");
+        }
+        return CreatedAtRoute(nameof(GetPlatformById), new { platform.Id }, platformReadDto);
     }
+    #endregion
 }

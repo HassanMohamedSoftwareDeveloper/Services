@@ -11,7 +11,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+Console.WriteLine($"--> Command Service URL {builder.Configuration["CommandService"]}");
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
