@@ -11,23 +11,23 @@ spec:
     metadata:
       labels:
         app: mssql
-    spec: 
+    spec:
       containers:
         - name: mssql
           image: mcr.microsoft.com/mssql/server:2019-latest
           ports:
             - containerPort: 1433
           env:
-            - name: MSSQL_PID
-              value: "Express"
-            - name: ACCEPT_EULA
-              value: "Y"
-            - name: SA_PASSWORD
-              valueFrom: 
-                secretKeyRef:
-                  name: mssql
-                  key: SA_PASSWORD
-          volumeMounts: 
+          - name: MSSQL_PID
+            value: "Express"
+          - name: ACCEPT_EULA
+            value: "Y"
+          - name: SA_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mssql
+                key: SA_PASSWORD
+          volumeMounts:
           - mountPath: /var/opt/mssql/data
             name: mssqldb
       volumes:
@@ -43,7 +43,7 @@ spec:
   type: ClusterIP
   selector:
     app: mssql
-  ports: 
+  ports:
   - name: mssql
     protocol: TCP
     port: 1433
@@ -52,12 +52,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mssql-loadblancer
+  name: mssql-loadbalancer
 spec:
   type: LoadBalancer
   selector:
     app: mssql
-  ports: 
+  ports:
   - protocol: TCP
     port: 1433
     targetPort: 1433
