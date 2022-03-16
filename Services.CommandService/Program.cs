@@ -1,11 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Services.CommandService.AsyncDataServices;
 using Services.CommandService.Data;
+using Services.CommandService.EventProcessing;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
 builder.Services.AddScoped<ICommandRepo, CommandRepo>();
 
 builder.Services.AddControllers();
+builder.Services.AddHostedService<MessageBusSubscriber>();
+
+builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
+
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

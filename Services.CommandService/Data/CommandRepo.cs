@@ -13,12 +13,13 @@ public class CommandRepo : ICommandRepo
 
     //Platforms
     public IEnumerable<Platform> GetAllPlatforms() => _context.Platforms;
-    public bool PlatformExists(int platformId) => _context.Platforms.Any(p=>p.Id.Equals(platformId));
     public void CreatePlatform(Platform platform)
     {
         if (platform is null) throw new ArgumentNullException(nameof(platform));
         _context.Platforms.Add(platform);
     }
+    public bool PlatformExists(int platformId) => _context.Platforms.Any(p=>p.Id.Equals(platformId));
+    public bool ExternalPlatformExists(int externalPlatformId) => _context.Platforms.Any(p=>p.ExternalId.Equals(externalPlatformId));
 
     //Commands
     public IEnumerable<Command> GetCommandsForPlatform(int platformId)

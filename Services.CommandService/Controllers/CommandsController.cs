@@ -22,7 +22,7 @@ public class CommandsController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<CommandReadDto>> GetCommandsForPlatform(int platformId)
     {
-        Console.WriteLine($"--> Hit GetCommandsFroPlatform: {platformId}");
+        Console.WriteLine($"--> Hit GetCommandsForPlatform: {platformId}");
         if (_repository.PlatformExists(platformId) is false) return NotFound();
 
         var commandItems = _repository.GetCommandsForPlatform(platformId);
