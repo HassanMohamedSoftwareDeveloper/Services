@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Services.PlatformService.AsyncDataServices;
 using Services.PlatformService.Data;
+using Services.PlatformService.SyncDataServices.Grpc;
 using Services.PlatformService.SyncDataServices.Http;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,9 +20,11 @@ else
 builder.Services.AddScoped<IPlatformRepo, PlatformRepo>();
 
 builder.Services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
-builder.Services.AddSingleton<IMessageBusClient,MessageBusClient>();
+builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+builder.Services.AddGrpc();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -42,6 +45,11 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGrpcService<GrpcPlatformService>();
+app.MapGet("/protos/platforms.proto", async context =>
+ {
+     await context.Response.WriteAsync(File.ReadAllText("Protos/Platforms.proto"));
+ });
 
 PrepDb.PrepPopulation(app, app.Environment.IsProduction());
 app.Run();

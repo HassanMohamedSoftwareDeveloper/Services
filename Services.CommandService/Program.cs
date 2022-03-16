@@ -2,6 +2,7 @@
 using Services.CommandService.AsyncDataServices;
 using Services.CommandService.Data;
 using Services.CommandService.EventProcessing;
+using Services.CommandService.SyncDataServices.Grpc;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
@@ -13,6 +14,9 @@ builder.Services.AddHostedService<MessageBusSubscriber>();
 builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+builder.Services.AddScoped<IPlatformDataClient, PlatformDataClient>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -29,5 +33,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+PrepDb.PrepPopulation(app);
 
 app.Run();
